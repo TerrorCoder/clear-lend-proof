@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, ShieldCheck, Zap, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CloudBackdrop } from "@/components/CloudBackdrop";
-import { ImageMarquee } from "@/components/ImageMarquee";
-import { TickerBanner } from "@/components/TickerBanner";
+import { SceneSlideshow } from "@/components/SceneSlideshow";
 import { Button } from "@/components/ui/button";
-import cloudHero from "@/assets/cloud-1.jpg";
 
 
 export const Route = createFileRoute("/")({
@@ -54,14 +52,7 @@ function Landing() {
 
       <main>
         <section className="hero-glow relative overflow-hidden border-b border-border/60">
-          <img
-            src={cloudHero}
-            alt="Grey clouds drifting above an overcast horizon"
-            width={1600}
-            height={900}
-            className="animate-ken-burns absolute inset-0 size-full object-cover opacity-40 grayscale"
-          />
-          <div className="fog-mask absolute inset-0" />
+          <SceneSlideshow opacity="opacity-40" />
           <div className="relative mx-auto max-w-3xl px-6 py-28 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-card/70 px-3.5 py-1.5 text-xs font-medium text-accent backdrop-blur">
               Built on Midnight Network
@@ -87,10 +78,6 @@ function Landing() {
           </div>
         </section>
 
-        <TickerBanner />
-
-        <ImageMarquee className="py-10" />
-
         <section id="how" className="mx-auto max-w-6xl px-6 py-20">
           <div className="grid gap-5 md:grid-cols-3">
             {features.map((f) => (
@@ -108,10 +95,9 @@ function Landing() {
           </div>
         </section>
 
-        <ImageMarquee fast className="pb-14" />
-
-        <section className="border-t border-border/60">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-6 py-14">
+        <section className="relative overflow-hidden border-t border-border/60">
+          <SceneSlideshow opacity="opacity-25" interval={7000} />
+          <div className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-6 py-20">
             <div>
               <h2 className="text-xl font-semibold">Three roles, one private ledger</h2>
               <p className="mt-2 max-w-xl text-sm text-muted-foreground">

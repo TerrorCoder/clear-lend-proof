@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CloudBackdrop } from "@/components/CloudBackdrop";
-import { ImageMarquee } from "@/components/ImageMarquee";
-import { TickerBanner } from "@/components/TickerBanner";
+import { SceneSlideshow } from "@/components/SceneSlideshow";
 import { BorrowerView } from "@/components/borrower/BorrowerView";
 import { LenderView } from "@/components/lender/LenderView";
 import { AuditorView } from "@/components/auditor/AuditorView";
@@ -42,19 +41,19 @@ function AppDashboard() {
     <div className="min-h-screen">
       <CloudBackdrop />
       <SiteHeader />
-      <TickerBanner />
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-8">
+      <section className="relative overflow-hidden border-b border-border/60">
+        <SceneSlideshow opacity="opacity-25" />
+        <div className="relative mx-auto max-w-6xl px-6 py-12">
           <p className="text-xs uppercase tracking-wide text-accent">{role} view</p>
-          <h1 className="mt-2 text-2xl font-semibold">ClearLend</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{subtitles[role]}</p>
+          <h1 className="mt-2 text-3xl font-semibold">ClearLend</h1>
+          <p className="mt-3 max-w-xl text-sm text-muted-foreground">{subtitles[role]}</p>
         </div>
-
+      </section>
+      <main className="mx-auto max-w-6xl px-6 py-10">
         {role === "Borrower" && <BorrowerView />}
         {role === "Lender" && <LenderView />}
         {role === "Auditor" && <AuditorView />}
       </main>
-      <ImageMarquee className="pb-12" />
     </div>
   );
 }
