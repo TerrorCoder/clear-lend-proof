@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CloudBackdrop } from "@/components/CloudBackdrop";
-import { ImageMarquee } from "@/components/ImageMarquee";
-import { TickerBanner } from "@/components/TickerBanner";
+import { SceneSlideshow } from "@/components/SceneSlideshow";
 import { BorrowerView } from "@/components/borrower/BorrowerView";
 import { LenderView } from "@/components/lender/LenderView";
 import { AuditorView } from "@/components/auditor/AuditorView";
