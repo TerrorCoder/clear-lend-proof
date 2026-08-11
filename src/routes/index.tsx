@@ -78,10 +78,6 @@ function Landing() {
           </div>
         </section>
 
-        <TickerBanner />
-
-        <ImageMarquee className="py-10" />
-
         <section id="how" className="mx-auto max-w-6xl px-6 py-20">
           <div className="grid gap-5 md:grid-cols-3">
             {features.map((f) => (
@@ -99,9 +95,8 @@ function Landing() {
           </div>
         </section>
 
-        <ImageMarquee fast className="pb-14" />
-
-        <section className="border-t border-border/60">
+        <section className="relative overflow-hidden border-t border-border/60">
+          <SceneSlideshow opacity="opacity-25" interval={7000} />
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-6 py-14">
             <div>
               <h2 className="text-xl font-semibold">Three roles, one private ledger</h2>
