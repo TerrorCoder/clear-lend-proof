@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { CloudBackdrop } from "@/components/CloudBackdrop";
+import { ImageMarquee } from "@/components/ImageMarquee";
+import { TickerBanner } from "@/components/TickerBanner";
 import { BorrowerView } from "@/components/borrower/BorrowerView";
 import { LenderView } from "@/components/lender/LenderView";
 import { AuditorView } from "@/components/auditor/AuditorView";
 import { useRole } from "@/lib/role-context";
+
 
 export const Route = createFileRoute("/app")({
   head: () => ({
@@ -36,7 +40,9 @@ function AppDashboard() {
 
   return (
     <div className="min-h-screen">
+      <CloudBackdrop />
       <SiteHeader />
+      <TickerBanner />
       <main className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8">
           <p className="text-xs uppercase tracking-wide text-accent">{role} view</p>
@@ -48,6 +54,8 @@ function AppDashboard() {
         {role === "Lender" && <LenderView />}
         {role === "Auditor" && <AuditorView />}
       </main>
+      <ImageMarquee className="pb-12" />
     </div>
   );
 }
+

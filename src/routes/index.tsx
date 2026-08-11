@@ -1,7 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, ShieldCheck, Zap, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { CloudBackdrop } from "@/components/CloudBackdrop";
+import { ImageMarquee } from "@/components/ImageMarquee";
+import { TickerBanner } from "@/components/TickerBanner";
 import { Button } from "@/components/ui/button";
+import cloudHero from "@/assets/cloud-1.jpg";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,12 +49,21 @@ const features = [
 function Landing() {
   return (
     <div className="min-h-screen">
+      <CloudBackdrop />
       <SiteHeader />
 
       <main>
-        <section className="hero-glow border-b border-border/60">
-          <div className="mx-auto max-w-3xl px-6 py-28 text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3.5 py-1.5 text-xs font-medium text-accent">
+        <section className="hero-glow relative overflow-hidden border-b border-border/60">
+          <img
+            src={cloudHero}
+            alt="Grey clouds drifting above an overcast horizon"
+            width={1600}
+            height={900}
+            className="animate-ken-burns absolute inset-0 size-full object-cover opacity-40 grayscale"
+          />
+          <div className="fog-mask absolute inset-0" />
+          <div className="relative mx-auto max-w-3xl px-6 py-28 text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-card/70 px-3.5 py-1.5 text-xs font-medium text-accent backdrop-blur">
               Built on Midnight Network
             </span>
             <h1 className="mt-7 text-4xl font-semibold leading-tight sm:text-5xl">
@@ -73,10 +87,17 @@ function Landing() {
           </div>
         </section>
 
+        <TickerBanner />
+
+        <ImageMarquee className="py-10" />
+
         <section id="how" className="mx-auto max-w-6xl px-6 py-20">
           <div className="grid gap-5 md:grid-cols-3">
             {features.map((f) => (
-              <article key={f.title} className="rounded-xl border border-border/70 bg-card p-6">
+              <article
+                key={f.title}
+                className="rounded-xl border border-border/70 bg-card/80 p-6 backdrop-blur transition-shadow hover:shadow-[var(--shadow-soft)]"
+              >
                 <span className="flex size-10 items-center justify-center rounded-lg bg-accent/12 text-accent">
                   <f.icon className="size-5" />
                 </span>
@@ -86,6 +107,8 @@ function Landing() {
             ))}
           </div>
         </section>
+
+        <ImageMarquee fast className="pb-14" />
 
         <section className="border-t border-border/60">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-6 py-14">
@@ -111,3 +134,4 @@ function Landing() {
     </div>
   );
 }
+
