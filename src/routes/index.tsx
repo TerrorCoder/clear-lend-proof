@@ -97,7 +97,7 @@ function Landing() {
 
         <section className="relative overflow-hidden border-t border-border/60">
           <SceneSlideshow opacity="opacity-25" interval={7000} />
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-6 py-14">
+          <div className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-6 py-20">
             <div>
               <h2 className="text-xl font-semibold">Three roles, one private ledger</h2>
               <p className="mt-2 max-w-xl text-sm text-muted-foreground">
