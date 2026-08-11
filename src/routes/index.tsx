@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, ShieldCheck, Zap, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CloudBackdrop } from "@/components/CloudBackdrop";
-import { ImageMarquee } from "@/components/ImageMarquee";
-import { TickerBanner } from "@/components/TickerBanner";
+import { SceneSlideshow } from "@/components/SceneSlideshow";
 import { Button } from "@/components/ui/button";
-import cloudHero from "@/assets/cloud-1.jpg";
 
 
 export const Route = createFileRoute("/")({
