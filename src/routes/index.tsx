@@ -52,14 +52,7 @@ function Landing() {
 
       <main>
         <section className="hero-glow relative overflow-hidden border-b border-border/60">
-          <img
-            src={cloudHero}
-            alt="Grey clouds drifting above an overcast horizon"
-            width={1600}
-            height={900}
-            className="animate-ken-burns absolute inset-0 size-full object-cover opacity-40 grayscale"
-          />
-          <div className="fog-mask absolute inset-0" />
+          <SceneSlideshow opacity="opacity-40" />
           <div className="relative mx-auto max-w-3xl px-6 py-28 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-card/70 px-3.5 py-1.5 text-xs font-medium text-accent backdrop-blur">
               Built on Midnight Network
