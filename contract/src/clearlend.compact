@@ -1,0 +1,98 @@
+// ClearLend — privacy-preserving lending on Midnight.
+//
+// Borrowers prove `annualIncome / (existingDebt + amountRequested) >= 1.5`
+// in zero knowledge. Income and debt are witness data: they are used inside
+// the proof and inside a commitment hash, but never written to the ledger.
+//
+// Selective disclosure (borrower pre-authorized, "Option A"):
+// at submission time the borrower's client encrypts {income, debt, nonce}
+// to the auditor's public key; the ciphertext is stored on-chain next to a
+// ZK-proven commitment over the same values. An auditor decrypts locally and
+// checks the values against the commitment via the pure `commitmentHash`
+// circuit. `requestDisclosure` appends an audit event on-chain — the event
+// records that a disclosure happened, never the values themselves.
+
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export enum LoanStatus {
+  PENDING,
+  APPROVED,
+  REJECTED
+}
+
+// Loan records, keyed by sequential loan id.
+export ledger loanCount: Counter;
+export ledger amounts: Map<Field, Uint<64>>;
+export ledger borrowers: Map<Field, Bytes<32>>;
+export ledger verified: Map<Field, Boolean>;
+export ledger statuses: Map<Field, LoanStatus>;
+// ZK-proven commitment to (income, debt, nonce) — binds the audit package
+// to the exact values used in the eligibility proof.
+export ledger commitments: Map<Field, Bytes<32>>;
+// Financials encrypted to the auditor's public key (opaque to the chain).
+export ledger auditPackages: Map<Field, Opaque<"string">>;
+
+// Append-only disclosure log, keyed by sequential event id.
+// Contains only { loanId, auditorId } — never the disclosed values.
+export ledger disclosureCount: Counter;
+export ledger disclosureLoanIds: Map<Field, Field>;
+export ledger disclosureAuditors: Map<Field, Bytes<32>>;
+
+// Private financials, supplied by the borrower's client at proof time.
+witness pendingLoanFinancials(): [Uint<64>, Uint<64>];
+witness pendingLoanNonce(): Bytes<32>;
+
+export circuit submitLoanRequest(
+  amount: Uint<64>,
+  borrowerId: Bytes<32>,
+  auditPackage: Opaque<"string">
+): Field {
+  const financials = pendingLoanFinancials();
+  const income = financials[0];
+  const debt = financials[1];
+  const nonce = pendingLoanNonce();
+
+  // collateralRatio = income / (debt + amount) >= 1.5  (integer form).
+  // If this does not hold, no proof can be generated and nothing is recorded.
+  assert(income * 2 >= (debt + amount) * 3, "Collateral ratio below required 1.5x threshold");
+
+  const id = loanCount as Field;
+  amounts.insert(id, disclose(amount));
+  borrowers.insert(id, disclose(borrowerId));
+  verified.insert(id, true);
+  statuses.insert(id, LoanStatus.PENDING);
+  commitments.insert(id, disclose(commitmentHash(income, debt, nonce)));
+  auditPackages.insert(id, disclose(auditPackage));
+  loanCount.increment(1);
+  return id;
+}
+
+export circuit approveLoan(loanId: Field): [] {
+  const id = disclose(loanId);
+  assert(verified.member(id), "Unknown loan");
+  assert(verified.lookup(id), "Loan proof is not verified");
+  assert(statuses.lookup(id) == LoanStatus.PENDING, "Loan is not pending");
+  statuses.insert(id, LoanStatus.APPROVED);
+}
+
+export circuit requestDisclosure(loanId: Field, auditorId: Bytes<32>): [] {
+  const id = disclose(loanId);
+  assert(commitments.member(id), "Unknown loan");
+  const eventId = disclosureCount as Field;
+  disclosureLoanIds.insert(eventId, id);
+  disclosureAuditors.insert(eventId, disclose(auditorId));
+  disclosureCount.increment(1);
+}
+
+// Pure circuit: also callable off-chain by the auditor's client to verify
+// decrypted financials against the on-chain commitment.
+export circuit commitmentHash(income: Uint<64>, debt: Uint<64>, nonce: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>([
+    pad(32, "clearlend:commit:"),
+    income as Field as Bytes<32>,
+    debt as Field as Bytes<32>,
+    nonce
+  ]);
+}

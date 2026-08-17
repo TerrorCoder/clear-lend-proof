@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  MOCK_DISCLOSURES,
   formatCurrency,
+  listDisclosures,
   requestDisclosure,
   truncateAddress,
   type DisclosureRecord,
@@ -13,10 +13,18 @@ import {
 } from "@/lib/clearlend-api";
 
 export function AuditorView() {
-  const [loanId, setLoanId] = useState("LN-1042");
+  const [loanId, setLoanId] = useState("LN-1000");
   const [loading, setLoading] = useState(false);
   const [disclosed, setDisclosed] = useState<Loan | null>(null);
-  const [log, setLog] = useState<DisclosureRecord[]>(MOCK_DISCLOSURES);
+  const [log, setLog] = useState<DisclosureRecord[]>([]);
+
+  useEffect(() => {
+    listDisclosures()
+      .then(setLog)
+      .catch(() => {
+        /* log stays empty until the contract is reachable */
+      });
+  }, []);
 
   const handleRequest = async () => {
     setLoading(true);
@@ -43,7 +51,7 @@ export function AuditorView() {
           <Input
             value={loanId}
             onChange={(e) => setLoanId(e.target.value)}
-            placeholder="Loan ID (e.g. LN-1042)"
+            placeholder="Loan ID (e.g. LN-1000)"
             className="sm:max-w-xs"
           />
           <Button variant="accent" onClick={handleRequest} disabled={loading || !loanId.trim()}>
@@ -74,7 +82,10 @@ export function AuditorView() {
             <Field label="Loan ID" value={disclosed.id} mono />
             <Field label="Borrower wallet" value={truncateAddress(disclosed.wallet)} mono />
             <Field label="Amount requested" value={formatCurrency(disclosed.amount)} />
-            <Field label="Disclosed annual income" value={formatCurrency(disclosed.privateIncome)} />
+            <Field
+              label="Disclosed annual income"
+              value={formatCurrency(disclosed.privateIncome)}
+            />
             <Field label="Disclosed existing debt" value={formatCurrency(disclosed.privateDebt)} />
             <Field label="Collateral ratio" value={`${disclosed.collateralRatio}×`} />
           </div>

@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PrivateBadge } from "@/components/PrivateBadge";
 import { ProofBadge, StatusBadge } from "@/components/StatusBadge";
 import {
-  MOCK_LOANS,
   approveLoan,
+  listLoans,
   formatCurrency,
   truncateAddress,
   type Loan,
@@ -19,17 +19,28 @@ const stats = [
 ];
 
 export function LenderView() {
-  const [loans, setLoans] = useState<Loan[]>(MOCK_LOANS);
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    listLoans()
+      .then(setLoans)
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Could not load loans"),
+      );
+  }, []);
 
   const handleApprove = async (loanId: string) => {
     setPendingId(loanId);
-    const res = await approveLoan(loanId);
-    setPendingId(null);
-    setLoans((prev) =>
-      prev.map((l) => (l.id === res.loanId ? { ...l, status: res.status } : l)),
-    );
-    toast.success(`Loan ${res.loanId} approved`);
+    try {
+      const res = await approveLoan(loanId);
+      setLoans((prev) => prev.map((l) => (l.id === res.loanId ? { ...l, status: res.status } : l)));
+      toast.success(`Loan ${res.loanId} approved`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Approval failed");
+    } finally {
+      setPendingId(null);
+    }
   };
 
   return (

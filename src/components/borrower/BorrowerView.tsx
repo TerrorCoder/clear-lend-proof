@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Lock, ShieldCheck, Wallet, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { StatusBadge, ProofBadge } from "@/components/StatusBadge";
 import {
-  MOCK_LOANS,
-  BORROWER_WALLET,
   connectLaceWallet,
+  listMyLoans,
   submitLoanProof,
   formatCurrency,
   truncateAddress,
@@ -34,30 +33,47 @@ export function BorrowerView() {
 
   const [proving, setProving] = useState(false);
   const [result, setResult] = useState<Loan | null>(null);
-  const [loans, setLoans] = useState<Loan[]>(
-    MOCK_LOANS.filter((l) => l.wallet === BORROWER_WALLET),
-  );
+  const [loans, setLoans] = useState<Loan[]>([]);
+
+  useEffect(() => {
+    if (!wallet) return;
+    listMyLoans()
+      .then(setLoans)
+      .catch(() => {
+        /* no loans yet or indexer unreachable — keep the list empty */
+      });
+  }, [wallet]);
 
   const handleConnect = async () => {
     setConnecting(true);
-    const session = await connectLaceWallet();
-    setConnecting(false);
-    setWallet(session.address);
-    setWalletOpen(false);
-    toast.success(`Connected to ${session.network}`);
+    try {
+      const session = await connectLaceWallet();
+      setWallet(session.address);
+      setWalletOpen(false);
+      toast.success(`Connected to ${session.network}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Wallet connection failed");
+    } finally {
+      setConnecting(false);
+    }
   };
 
   const handleSubmit = async () => {
     setResult(null);
     setProving(true);
-    const loan = await submitLoanProof({
-      amount: Number(amount),
-      income: Number(income),
-      debt: Number(debt),
-    });
-    setProving(false);
-    setResult(loan);
-    setLoans((prev) => [loan, ...prev]);
+    try {
+      const loan = await submitLoanProof({
+        amount: Number(amount),
+        income: Number(income),
+        debt: Number(debt),
+      });
+      setResult(loan);
+      setLoans((prev) => [loan, ...prev]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Proof submission failed");
+    } finally {
+      setProving(false);
+    }
   };
 
   return (
@@ -86,8 +102,7 @@ export function BorrowerView() {
         <section className="rounded-xl border border-border/70 bg-card p-6 lg:col-span-3">
           <h3 className="font-display text-base font-semibold">Request a loan</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Public inputs are recorded on-chain. Shielded inputs are used only to build your
-            proof.
+            Public inputs are recorded on-chain. Shielded inputs are used only to build your proof.
           </p>
 
           <div className="mt-6 space-y-5">
@@ -157,24 +172,26 @@ export function BorrowerView() {
             {result && (
               <div
                 className={
-                  result.status === "Approved"
+                  result.proofStatus === "Verified"
                     ? "rounded-lg border border-success/30 bg-success/10 p-4"
                     : "rounded-lg border border-destructive/30 bg-destructive/10 p-4"
                 }
               >
                 <p
                   className={
-                    result.status === "Approved"
+                    result.proofStatus === "Verified"
                       ? "text-sm font-medium text-success"
                       : "text-sm font-medium text-destructive"
                   }
                 >
-                  {result.status === "Approved"
-                    ? "Loan approved — eligibility proven without revealing your financials"
+                  {result.proofStatus === "Verified"
+                    ? "Proof verified — eligibility proven without revealing your financials"
                     : "Loan rejected — the threshold proof did not hold"}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Loan {result.id} · proof verified on Midnight · income and debt remain shielded.
+                  {result.proofStatus === "Verified"
+                    ? `Loan ${result.id} · proof verified on Midnight · income and debt remain shielded.`
+                    : "No proof could be generated, so nothing was submitted on-chain."}
                 </p>
               </div>
             )}
@@ -185,10 +202,7 @@ export function BorrowerView() {
           <h3 className="font-display text-base font-semibold">Your loan requests</h3>
           <ul className="mt-4 space-y-3">
             {loans.map((loan) => (
-              <li
-                key={loan.id}
-                className="rounded-lg border border-border/60 bg-background/40 p-4"
-              >
+              <li key={loan.id} className="rounded-lg border border-border/60 bg-background/40 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-mono text-sm">{loan.id}</span>
                   <StatusBadge status={loan.status} />
